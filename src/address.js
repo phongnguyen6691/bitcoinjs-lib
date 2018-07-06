@@ -32,20 +32,24 @@ function fromBech32 (address) {
 }
 
 function toBase58Check (hash, version) {
-  typeforce(types.tuple(types.Hash160bit, types.UInt8), arguments)
+  if (version < 256){
+    typeforce(types.tuple(types.Hash160bit, types.UInt8), arguments)
 
-  var payload = Buffer.allocUnsafe(21)
-  payload.writeUInt8(version, 0)
-  hash.copy(payload, 1)
+    var payload = Buffer.allocUnsafe(21)
+    payload.writeUInt8(version, 0)
+    hash.copy(payload, 1)
 
-  return bs58check.encode(payload)
-}
+    return bs58check.encode(payload)
+  }
+  else{
+    typeforce(types.tuple(types.Hash160bit, types.UInt16), arguments)
 
-function toBech32 (data, version, prefix) {
-  var words = bech32.toWords(data)
-  words.unshift(version)
+    var payload = Buffer.allocUnsafe(22)
+    payload.writeUInt16BE(version, 0)
+    hash.copy(payload, 2)
 
-  return bech32.encode(prefix, words)
+    return bs58check.encode(payload)
+  }
 }
 
 function fromOutputScript (outputScript, network) {
